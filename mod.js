@@ -111,5 +111,5 @@ export async function text (iterable) {
  * @param {ReadableStream|AsyncIterable} iterable
  */
 export function json (iterable) {
-  return text(iterable).then(text => JSON.parse(text))
+  return text(iterable).then(JSON.parse)
 }
