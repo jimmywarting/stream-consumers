@@ -26,7 +26,10 @@ function stream2iterator (iterable) {
 
 let Blob = globalThis.Blob
 
-/** @type {BufferConstructor} */
+/**
+ * You can assign this value yourself if you want to support buffer()
+ * @type {BufferConstructor | undefined}
+ */
 export let Buffer
 
 /**
