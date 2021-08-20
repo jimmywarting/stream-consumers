@@ -1,6 +1,6 @@
 # Stream Consumers
 
-*`node:stream/consumers` core streams for Deno, Browsers and older nodejs versions*
+*`node:stream/consumers` for Deno, Browsers and older nodejs versions*
 
 (targeting NodeJS v16.7.0+ only? use [node:stream/consumers](https://nodejs.org/api/webstreams.html#webstreams_utility_consumers) instead)
 
