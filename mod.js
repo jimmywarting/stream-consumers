@@ -84,8 +84,7 @@ export async function buffer (iterable) {
   if (!Buffer) {
     Buffer = (await import('node:buffer')).Buffer
   }
-  const ab = await arrayBuffer(iterable)
-  return Buffer.from(ab)
+  return arrayBuffer(iterable).then(Buffer.from)
 }
 
 /**
