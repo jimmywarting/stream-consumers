@@ -61,7 +61,6 @@ export async function blob (iterable) {
   const chunks = []
   if (!Blob) {
     // presumably we're in a NodeJS
-    const { version } = await import('node:os')
     const Buf = await import('node:buffer')
     if (Buf.Blob && Buf.Blob.prototype.stream) {
       Blob = Buf.Blob
