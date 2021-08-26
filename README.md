@@ -47,7 +47,7 @@ import { arrayBuffer, blob, json, text, buffer } from 'stream-consumers'
 
 #### `streamConsumers.buffer(stream)`
 
-* NodeJS only feature. Best avoided for better cross comparability with Deno And Browsers. Use arrayBuffer() instead.
+* NodeJS only feature. Best avoided for better cross comparability with Deno And Browsers. Use `arrayBuffer(stream).then(Buffer.from)` instead if you realy want a Buffer instead.
 * `stream` {ReadableStream|stream.Readable|AsyncIterator}
 * Returns: {Promise} Fulfills with a {Buffer} containing the full
   contents of the stream.
