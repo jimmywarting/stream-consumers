@@ -24,13 +24,7 @@ function stream2iterator (iterable) {
   return iterable
 }
 
-let Blob = globalThis.Blob
-
-/**
- * You can assign this value yourself if you want to support buffer()
- * @type {BufferConstructor | undefined}
- */
-export let Buffer
+export let Blob = globalThis.Blob
 
 /**
  * Fulfills with an ArrayBuffer containing the full contents of the stream.
@@ -72,19 +66,6 @@ export async function blob (iterable) {
     chunks.push(chunk)
   }
   return new Blob(chunks)
-}
-
-/**
- * NodeJS only feature.
- * Best avoided for better cross comparability
- * with Deno And Browsers. Use arrayBuffer() instead.
- * @param {ReadableStream|AsyncIterable} iterable
- */
-export async function buffer (iterable) {
-  if (!Buffer) {
-    Buffer = (await import('node:buffer')).Buffer
-  }
-  return arrayBuffer(iterable).then(Buffer.from)
 }
 
 /**
