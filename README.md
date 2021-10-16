@@ -45,7 +45,7 @@ import { arrayBuffer, blob, json, text, buffer } from 'stream-consumers'
 * Returns: {Promise} Fulfills with the contents of the stream parsed as a
   UTF-8 encoded string.
 
-#### `streamConsumers.buffer(stream)` (⚠️ not supported!)
+#### `streamConsumers.buffer(stream)` ⚠️ Not supported
 
 Use `arrayBuffer(stream).then(Buffer.from)` instead if you realy want a Buffer.
 (you should be using uint8array instead for better Browser/Deno bundles.
