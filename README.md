@@ -47,7 +47,7 @@ import { arrayBuffer, blob, json, text, buffer } from 'stream-consumers'
 
 #### `streamConsumers.buffer(stream)` ⚠️ Not supported
 
-Use `arrayBuffer(stream).then(Buffer.from)` instead if you realy want a Buffer.
+Use `arrayBuffer(stream).then(Buffer.from)` instead if you realy want a Buffer.<br>
 (you should be using uint8array instead for better Browser/Deno bundles.
 
 ## Alternative native methods
