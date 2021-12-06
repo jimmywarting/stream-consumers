@@ -1,6 +1,6 @@
 {
   "name": "stream-consumers",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "a user-land copy of the node:stream/consumers library from Node.js",
   "main": "mod.js",
   "type": "module",
@@ -43,6 +43,6 @@
     "@types/node": "^16.6.2"
   },
   "dependencies": {
-    "fetch-blob": "^3.1.2"
+    "fetch-blob": "^3.1.3"
   }
 }
