@@ -1,14 +1,18 @@
 import assert from 'node:assert'
 import { PassThrough } from 'node:stream'
-import { Buffer } from 'node:buffer'
-import { TransformStream } from 'node:stream/web'
-import { arrayBuffer, blob, buffer, text, json } from './mod.js'
 
-const buf = Buffer.from('hellothere')
-const kArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+import { arrayBuffer, blob, text, json } from './mod.js'
 
-// TODO: remove async wrapper once VSCode understands that top level await is supported...
+process.emitWarning = () => {}
+
+const buf = new TextEncoder().encode('hellothere')
+const kArrayBuffer = buf.buffer;
+
+// TODO: remove async wrapper once VSCode understands that
+// top level await is supported and when dynamic import is supported in node
 (async () => {
+  const { TransformStream } = await import('node:stream/web').catch(() => ({}))
+
   {
     const passthrough = new PassThrough()
     passthrough.write('hello')
@@ -34,16 +38,6 @@ const kArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteL
     passthrough.write('hello')
     passthrough.end('there')
 
-    const buf = await buffer(passthrough)
-    assert.strictEqual(buf.byteLength, 10)
-    assert.deepStrictEqual(buf.buffer, kArrayBuffer)
-  }
-
-  {
-    const passthrough = new PassThrough()
-    passthrough.write('hello')
-    passthrough.end('there')
-
     const str = await text(passthrough)
     assert.strictEqual(str.length, 10)
     assert.deepStrictEqual(str, 'hellothere')
@@ -59,58 +53,72 @@ const kArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteL
     assert.deepStrictEqual(str, 'hellothere')
   }
 
-  {
-    const { writable, readable } = new TransformStream()
-    const writer = writable.getWriter()
-    writer.write('hello')
-    writer.write('there')
-    // Hmm, for some reason this fail if i don't use
-    // await but the one below works with ab
-    await writer.close()
+  if (TransformStream) {
+    {
+      const { writable, readable } = new TransformStream()
+      const writer = writable.getWriter()
+      writer.write('hello')
+      writer.write('there')
+      // Hmm, for some reason this fail if i don't use
+      // await but the one below works with ab
+      await writer.close()
 
-    const chunk = await blob(readable)
-    assert.strictEqual(chunk.size, 10)
-    assert.deepStrictEqual(await chunk.arrayBuffer(), kArrayBuffer)
-    assert.rejects(blob(readable), { code: 'ERR_INVALID_STATE' })
-  }
+      const chunk = await blob(readable)
+      assert.strictEqual(chunk.size, 10)
+      assert.deepStrictEqual(await chunk.arrayBuffer(), kArrayBuffer)
+      assert.rejects(blob(readable), { code: 'ERR_INVALID_STATE' })
+    }
 
-  {
-    const { writable, readable } = new TransformStream()
-    const writer = writable.getWriter()
-    writer.write('hello')
-    writer.write('there')
-    writer.close()
+    {
+      const { writable, readable } = new TransformStream()
+      const writer = writable.getWriter()
+      writer.write('hello')
+      writer.write('there')
+      writer.close()
 
-    const ab = await arrayBuffer(readable)
-    assert.strictEqual(ab.byteLength, 10)
-    assert.deepStrictEqual(ab, kArrayBuffer)
-    assert.rejects(arrayBuffer(readable), { code: 'ERR_INVALID_STATE' })
-  }
+      const ab = await arrayBuffer(readable)
+      assert.strictEqual(ab.byteLength, 10)
+      assert.deepStrictEqual(ab, kArrayBuffer)
+      assert.rejects(arrayBuffer(readable), { code: 'ERR_INVALID_STATE' })
+    }
 
-  {
-    const { writable, readable } = new TransformStream()
-    const writer = writable.getWriter()
-    writer.write('hello')
-    writer.write('there')
-    writer.close()
+    {
+      const { writable, readable } = new TransformStream()
+      const writer = writable.getWriter()
+      writer.write('hello')
+      writer.write('there')
+      writer.close()
 
-    const str = await text(readable)
-    assert.strictEqual(str.length, 10)
-    assert.deepStrictEqual(str, 'hellothere')
-    assert.rejects(text(readable), { code: 'ERR_INVALID_STATE' })
-  }
+      const str = await text(readable)
+      assert.strictEqual(str.length, 10)
+      assert.deepStrictEqual(str, 'hellothere')
+      assert.rejects(text(readable), { code: 'ERR_INVALID_STATE' })
+    }
 
-  {
-    const { writable, readable } = new TransformStream()
-    const writer = writable.getWriter()
-    writer.write('"hello')
-    writer.write('there"')
-    writer.close()
+    {
+      const { writable, readable } = new TransformStream()
+      const writer = writable.getWriter()
+      writer.write('"hello')
+      writer.write('there"')
+      writer.close()
 
-    const str = await json(readable)
-    assert.strictEqual(str.length, 10)
-    assert.deepStrictEqual(str, 'hellothere')
-    assert.rejects(json(readable), { code: 'ERR_INVALID_STATE' })
+      const str = await json(readable)
+      assert.strictEqual(str.length, 10)
+      assert.deepStrictEqual(str, 'hellothere')
+      assert.rejects(json(readable), { code: 'ERR_INVALID_STATE' })
+    }
+
+    {
+      const stream = new TransformStream()
+      const writer = stream.writable.getWriter()
+      writer.write(new Uint8Array([0xe2]))
+      writer.write(new Uint8Array([0x82]))
+      writer.close()
+
+      const str = await text(stream.readable)
+      // Incomplete utf8 character is flushed as a replacement char
+      assert.strictEqual(str.charCodeAt(0), 0xfffd)
+    }
   }
 
   {
@@ -136,23 +144,7 @@ const kArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteL
     const ab = await arrayBuffer(stream)
     assert.strictEqual(ab.byteLength, 30)
     assert.strictEqual(
-      Buffer.from(ab).toString(),
-      '[object Object][object Object]'
-    )
-  }
-
-  {
-    const stream = new PassThrough({
-      readableObjectMode: true,
-      writableObjectMode: true
-    })
-    stream.write({})
-    stream.end({})
-
-    const buf = await buffer(stream)
-    assert.strictEqual(buf.byteLength, 30)
-    assert.strictEqual(
-      buf.toString(),
+      new TextDecoder().decode(ab),
       '[object Object][object Object]'
     )
   }
@@ -181,17 +173,5 @@ const kArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteL
     await assert.rejects(json(stream), {
       code: 'ERR_INVALID_ARG_TYPE'
     })
-  }
-
-  {
-    const stream = new TransformStream()
-    const writer = stream.writable.getWriter()
-    writer.write(new Uint8Array([0xe2]))
-    writer.write(new Uint8Array([0x82]))
-    writer.close()
-
-    const str = await text(stream.readable)
-    // Incomplete utf8 character is flushed as a replacement char
-    assert.strictEqual(str.charCodeAt(0), 0xfffd)
   }
 })()
