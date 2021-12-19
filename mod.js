@@ -10,7 +10,8 @@ function stream2iterator (iterable) {
   if (
     iterable &&
     !iterable[Symbol.asyncIterator] &&
-    iterable.constructor?.name === 'ReadableStream'
+    iterable.constructor &&
+    iterable.constructor.name === 'ReadableStream'
   ) {
     return (async function * () {
       const reader = iterable.getReader()
