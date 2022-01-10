@@ -18,7 +18,7 @@ streams.
 They are accessed using:
 
 ```js
-import { arrayBuffer, blob, json, text, buffer } from 'stream-consumers'
+import { arrayBuffer, blob, json, text } from 'stream-consumers'
 ```
 
 #### `streamConsumers.arrayBuffer(stream)`
