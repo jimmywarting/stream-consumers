@@ -13,7 +13,7 @@ Node 12.20+ is needed to use it and it must be `import`ed instead of `require`d.
 ## Use
 
 The utility consumer functions provide common options for consuming
-streams.
+NodeJS & web readable streams, it also supports async and sync iterators.
 
 They are accessed using:
 
